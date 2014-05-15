@@ -28,6 +28,16 @@ namespace RiceBallXNA
         private bool allowLS;
         private bool allowRS;
 
+        private Texture2D buildingScreen;
+        private Texture2D buildingBar;
+
+        string line;
+        int count = 0;
+
+        private static string[] levelCurList; //list of all the lines in a file
+   
+        private int llstatCurrent; //when building a level, how many lines have been processed in the level file
+
         private Texture2D background;
         private Texture2D orb;
         private Texture2D sOrb;
@@ -61,6 +71,11 @@ namespace RiceBallXNA
         private Vector2 loadMenuBackgroundPos;
         private Vector2 playButtonPos;
 
+        private bool beginCalled;
+
+        private Vector2 buildingScreenPos;
+        private Vector2 buildingBarPos;
+
         private Vector2 lcARPos;
         private Vector2 lcALPos;
 
@@ -86,7 +101,10 @@ namespace RiceBallXNA
         private Song curSong;
 
         public Song bgSound; //mainmenu
-        public Song creditsSong; //credits menu
+
+        public static List<Song> gameSongs;
+
+        public string levelCurPath;
 
       //  public static SoundEffect click;
 
@@ -96,7 +114,8 @@ namespace RiceBallXNA
             StartMenu, //main menu
             Loading,   //credits
             Playing,   //inGame
-            Paused     //levelChooser
+            Paused,     //levelChooser
+            Building    //loading screen
         }
 
         private GameState gs;
@@ -120,6 +139,11 @@ namespace RiceBallXNA
             // TODO: Add your initialization logic here
 
             IsMouseVisible = true;
+
+
+            levelCurList = new string[1999];
+
+            
 
             orbPos = new Vector2(50, 50);
             orb = Content.Load<Texture2D>(@"character/char1-1");
@@ -148,6 +172,9 @@ namespace RiceBallXNA
 
                 levelChooseTextPos = new Vector2(400, 300);
 
+                buildingScreenPos = new Vector2(0, 0);
+                buildingBarPos = new Vector2(29, 483);
+
 
 
 
@@ -158,7 +185,10 @@ namespace RiceBallXNA
                 
 
                 levelChooserCur = 0;
-            
+
+                levelCurPath = "Content/Levels/" + levelChooseText + ".txt";
+
+            beginCalled = new bool();
             
 
             gs = GameState.StartMenu;
@@ -169,7 +199,7 @@ namespace RiceBallXNA
             preMouseState = mouseState;
 
             
-            bgSound = Content.Load<Song>("Techno");
+            bgSound = Content.Load<Song>(@"Techno");
 
             MediaPlayer.IsRepeating = true;
 
@@ -217,15 +247,29 @@ namespace RiceBallXNA
 
             aPix = Content.Load<SpriteFont>("arcadepix");
 
+            buildingBar = Content.Load<Texture2D>(@"background/buildingBar");
+            buildingScreen = Content.Load<Texture2D>(@"background/buildingScreen");
+
+            gameSongs = new List<Song>();
+
+            gameSongs.Add(Content.Load<Song>(@"Waterflame - Glorious Morning 2"));
+            gameSongs.Add(Content.Load<Song>(@"Waterflame - Jumper 2013 (HD)"));
+            gameSongs.Add(Content.Load<Song>(@"Waterflame - To The Skies"));
+            gameSongs.Add(Content.Load<Song>(@"Dimrain47 - The Prototype"));
+            gameSongs.Add(Content.Load<Song>(@"Techno"));
+        
+                                    
             
 
-            creditsSong = Content.Load<Song>(@"Techno");
+            //creditsSong = Content.Load<Song>(@"Techno");
         }
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
         /// all content.
         /// </summary>
+        /// 
+        
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
@@ -256,6 +300,12 @@ namespace RiceBallXNA
 
             }
 
+            if (gs == GameState.Building)
+            {
+
+                
+            }
+
             if (gs == GameState.Loading)
             {
                 sOrbPos.Y += speed;
@@ -275,10 +325,14 @@ namespace RiceBallXNA
 
             preMouseState = mouseState;
 
-            if (gs == GameState.Playing && isLoading)
+            if (gs == GameState.Playing )
             {
-                LoadGame();
-                isLoading = false;
+                if (curSong != gameSongs.ElementAt(Convert.ToInt32(levelCurList[0])))
+                {
+                    StopSong();
+                    int song = Convert.ToInt32(levelCurList[0]);
+                    PlaySong(gameSongs[song]);
+                }
             }
 
             if (gs == GameState.StartMenu && curSong != bgSound)
@@ -287,11 +341,11 @@ namespace RiceBallXNA
                 PlaySong(bgSound);
             }
 
-            if (gs == GameState.Loading && curSong != creditsSong)
-            {
-                StopSong();
-                PlaySong(creditsSong);
-            }
+          //  if (gs == GameState.Loading && curSong != creditsSong)
+           // {
+          //      StopSong();
+          //      PlaySong(creditsSong);
+           // }
 
             base.Update(gameTime);
         }
@@ -305,6 +359,7 @@ namespace RiceBallXNA
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
+            beginCalled = true;
 
             if (gs == GameState.Playing)
             {
@@ -325,6 +380,43 @@ namespace RiceBallXNA
                 spriteBatch.Draw(creditsButton, creditsButtonPos, Color.White);
 
                 spriteBatch.Draw(orb, orbPos, Color.White);
+            }
+
+            if (gs == GameState.Building)
+            {
+                spriteBatch.Draw(buildingScreen, buildingScreenPos, Color.White);
+                
+
+                using (StreamReader r = new StreamReader(levelCurPath))
+                {
+
+                    while ((line = r.ReadLine()) != null)
+                    {
+
+                        levelCurList[count] = line;
+                        count++;
+
+                        if (beginCalled)
+                        {
+                            Vector2 FontOrigin = aPix.MeasureString(levelChooseText) / 2;
+
+                            spriteBatch.DrawString(aPix, "Loading Level...", levelChooseTextPos, Color.White, 0, FontOrigin, 1.0f, SpriteEffects.None, 0.5f);
+
+                        }
+                        buildingBarPos.X += speed;
+                        spriteBatch.Draw(buildingBar, buildingBarPos, Color.White);
+
+                        if (buildingBarPos.X > (GraphicsDevice.Viewport.Width - OrbX) || buildingBarPos.X < 0)
+                        {
+                            speed *= -1;
+                        }
+
+                    }
+
+                }
+
+
+                gs = GameState.Playing;
             }
 
             if (gs == GameState.Paused)
@@ -409,6 +501,8 @@ namespace RiceBallXNA
                 Rectangle leftHit = new Rectangle((int)lcALPos.X, (int)lcALPos.Y, 163, 101);
                 Rectangle rightHit = new Rectangle((int)lcARPos.X, (int)lcARPos.Y, 163, 101);
 
+                Rectangle playHit = new Rectangle((int)playButtonPos.X, (int)playButtonPos.Y, 163, 101);
+
                 if (mouseHit.Intersects(backButtonHit)) //clicked back button
                 {
                     gs = GameState.StartMenu;
@@ -422,11 +516,13 @@ namespace RiceBallXNA
                         levelChooserCur = jiles.Length;
                        // levelChooseText = levelChooserCur.ToString();
                        levelChooseText = jiles.GetValue(levelChooserCur).ToString();
+                       levelCurPath = "Content/Levels/" + levelChooseText + ".txt";
                     }
                     else
                    {
                        levelChooserCur--;
-                       levelChooseText = jiles.GetValue(levelChooserCur).ToString(); 
+                       levelChooseText = jiles.GetValue(levelChooserCur).ToString();
+                       levelCurPath = "Content/Levels/" + levelChooseText + ".txt";
                     }
                     
                 }
@@ -437,13 +533,20 @@ namespace RiceBallXNA
                     {
                         levelChooserCur = 0;
                         levelChooseText = jiles.GetValue(levelChooserCur).ToString();
+                        levelCurPath = "Content/Levels/" + levelChooseText + ".txt";
                     }
                     else
                     {
                         levelChooserCur++;
                         levelChooseText = jiles.GetValue(levelChooserCur).ToString();
+                        levelCurPath = "Content/Levels/" + levelChooseText + ".txt";
                     }
                     
+                }
+
+                else if (mouseHit.Intersects(playHit))
+                {
+                    gs = GameState.Building;
                 }
             }
 
