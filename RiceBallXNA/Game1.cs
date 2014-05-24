@@ -28,16 +28,26 @@ namespace RiceBallXNA
         private bool allowLS;
         private bool allowRS;
 
+        
+
+       //private Texture2D playerGraphic;
+
+      //  private Vector2 playerPos;
+
+        private Sprite player;
+
         private Texture2D buildingScreen;
         private Texture2D buildingBar;
 
         string line;
-        int count = 0;
+        int count = 2;
 
         private static string[] levelCurList; //list of all the lines in a file
    
         private int llstatCurrent; //when building a level, how many lines have been processed in the level file
 
+        private static Sprite[] spriteArray;
+        
         private Texture2D background;
         private Texture2D orb;
         private Texture2D sOrb;
@@ -60,6 +70,8 @@ namespace RiceBallXNA
 
       //  DirectoryInfo directory = new DirectoryInfo("%USERPROFILE%\\Documents\\RiceballLevels"); //fix this!
 
+        private string sprite = " ";
+
         private Vector2 orbPos;
         private Vector2 sOrbPos;
         private Vector2 startButtonPos;
@@ -70,6 +82,9 @@ namespace RiceBallXNA
         private Vector2 creditsBackgroundPos;
         private Vector2 loadMenuBackgroundPos;
         private Vector2 playButtonPos;
+
+        private Vector2 skyPos;
+        private Texture2D sky;
 
         private bool beginCalled;
 
@@ -103,6 +118,13 @@ namespace RiceBallXNA
         public Song bgSound; //mainmenu
 
         public static List<Song> gameSongs;
+
+        public static List<Sprite> spriteList;
+
+        int gravityTotalI = 0;
+        int gravityCounterI = 0;
+
+        
 
         public string levelCurPath;
 
@@ -155,9 +177,17 @@ namespace RiceBallXNA
 
             creditsBackgroundPos = new Vector2(0, 0);
 
+            levelCurList[1] = "platformRed1 342 520";
+
             startButtonPos = new Vector2(275, 240);
 
+            skyPos = new Vector2(0, 0);
+
             creditsButtonPos = new Vector2(275, 440);
+
+            player = new Sprite();
+            
+            player.Position = new Vector2(342, 432);
 
          
 
@@ -245,12 +275,18 @@ namespace RiceBallXNA
             lcAR = Content.Load<Texture2D>(@"background/levelChooseArrowRight");
             lcAL = Content.Load<Texture2D>(@"background/levelChooseArrowLeft");
 
+            sky = Content.Load<Texture2D>(@"background/sky");
+
             aPix = Content.Load<SpriteFont>("arcadepix");
 
             buildingBar = Content.Load<Texture2D>(@"background/buildingBar");
             buildingScreen = Content.Load<Texture2D>(@"background/buildingScreen");
 
+            player.Texture = Content.Load<Texture2D>(@"character/char1-2");
+
             gameSongs = new List<Song>();
+
+            
 
             gameSongs.Add(Content.Load<Song>(@"Waterflame - Glorious Morning 2"));
             gameSongs.Add(Content.Load<Song>(@"Waterflame - Jumper 2013 (HD)"));
@@ -275,6 +311,13 @@ namespace RiceBallXNA
             // TODO: Unload any non ContentManager content here
         }
 
+        public static String getWord(String source, int index)
+        {
+            char[] space = { ' ' };
+            String[] words = source.Split(space);
+            String word = words[index];
+            return word;
+        }
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -327,12 +370,23 @@ namespace RiceBallXNA
 
             if (gs == GameState.Playing )
             {
-                if (curSong != gameSongs.ElementAt(Convert.ToInt32(levelCurList[0])))
+                if (curSong != gameSongs.ElementAt(Convert.ToInt32(levelCurList[0]))) //hacky method: use the indication of whether or not the correct song is playing to render the sprites
                 {
                     StopSong();
                     int song = Convert.ToInt32(levelCurList[0]);
                     PlaySong(gameSongs[song]);
+
+                    
+
+                 
+                         
+                  
+                        
+                        //count++;
+    //                    }
                 }
+
+
             }
 
             if (gs == GameState.StartMenu && curSong != bgSound)
@@ -363,8 +417,19 @@ namespace RiceBallXNA
 
             if (gs == GameState.Playing)
             {
+                spriteBatch.Draw(sky, skyPos, Color.White);
+                player.Draw(spriteBatch);
+
+
+                for (int count = 0; count < spriteArray.Length; count++) 
+                {
+                    if (spriteArray[count].Position.X <= 800) //don't draw any sprites that have positions extending beyond the canvas size for more optimization, this is already poorly optimizied anyway.
+                    {
+                        spriteArray[count].Draw(spriteBatch);
+                    }
+                }
+
                 
-                spriteBatch.Draw(orb, orbPos, Color.White);
 
             }
             if (gs == GameState.Loading)

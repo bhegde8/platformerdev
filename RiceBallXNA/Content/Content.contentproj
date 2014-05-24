@@ -77,73 +77,73 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="platform\blackPlatform1.png">
-      <Name>blackPlatform1</Name>
+    <Compile Include="platform\platformBlack1.png">
+      <Name>platformBlack1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\bluePlatform1.png">
-      <Name>bluePlatform1</Name>
+    <Compile Include="platform\platformBlue1.png">
+      <Name>platformBlue1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\bluePlatform2.png">
-      <Name>bluePlatform2</Name>
+    <Compile Include="platform\platformBlue2.png">
+      <Name>platformBlue2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\grayPlatform1.png">
-      <Name>grayPlatform1</Name>
+    <Compile Include="platform\platformGray1.png">
+      <Name>platformGray1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\greenPlatform1.png">
-      <Name>greenPlatform1</Name>
+    <Compile Include="platform\platformGreen1.png">
+      <Name>platformGreen1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\greenPlatform2.png">
-      <Name>greenPlatform2</Name>
+    <Compile Include="platform\platformGreen2.png">
+      <Name>platformGreen2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\orangePlatform1.png">
-      <Name>orangePlatform1</Name>
+    <Compile Include="platform\platformOrange1.png">
+      <Name>platformOrange1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\orangePlatform2.png">
-      <Name>orangePlatform2</Name>
+    <Compile Include="platform\platformOrange2.png">
+      <Name>platformOrange2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\purplePlatform1.png">
-      <Name>purplePlatform1</Name>
+    <Compile Include="platform\platformPurple1.png">
+      <Name>platformPurple1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\purplePlatform2.png">
-      <Name>purplePlatform2</Name>
+    <Compile Include="platform\platformPurple2.png">
+      <Name>platformPurple2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\redPlatform1.png">
-      <Name>redPlatform1</Name>
+    <Compile Include="platform\platformRed1.png">
+      <Name>platformRed1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\redPlatform2.png">
-      <Name>redPlatform2</Name>
+    <Compile Include="platform\platformRed2.png">
+      <Name>platformRed2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\yellowPlatform1.png">
-      <Name>yellowPlatform1</Name>
+    <Compile Include="platform\platformYellow1.png">
+      <Name>platformYellow1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="platform\yellowPlatform2.png">
-      <Name>yellowPlatform2</Name>
+    <Compile Include="platform\platformYellow2.png">
+      <Name>platformYellow2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -325,6 +325,14 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="sound\ding.wav">
+      <Name>ding.wav</Name>
+      <Importer>WavImporter</Importer>
+      <Processor>SoundEffectProcessor</Processor>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
