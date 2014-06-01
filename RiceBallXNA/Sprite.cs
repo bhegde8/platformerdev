@@ -21,8 +21,8 @@ namespace RiceBallXNA
 {
     public class Sprite
     {
-        public Texture2D Texture { get; set; }
-        public Vector2 Position { get; set; }
+        public Texture2D Texture;
+        public Vector2 Position;
 
         public Rectangle boundingRect;
         public Rectangle gravityRect;

@@ -19,35 +19,38 @@ using System.IO;
 
 namespace RiceBallXNA
 {
-    public class Platform
+    public class Level1
     {
-        public Texture2D Texture { get; set; }
-        public Vector2 Position { get; set; }
 
-        public Rectangle boundingRect;
+        public int level;
+        public Platform p1;
+
+
+       
         
-        
-
-        public bool grounded = false;
-        bool solid;
 
 
-        public Platform() { }
-
-        public Platform(Texture2D texture, Vector2 position)
-        {
-            Texture = texture;
-            Position = position;
-
-
-            boundingRect = new Rectangle((int)position.X, (int)position.Y, texture.Width, texture.Height);
+        public Level1(ContentManager Content) {
             
+            p1 = new Platform(Content.Load<Texture2D>(@"platform/platformGreen1"), new Vector2(342, 520));
+        }
+
+        public void Update()
+        {
+           
+        }
+
+        public void moveRight()
+        {
+            float p1X = p1.Position.X;
+            float p1Y = p1.Position.Y;
+            p1.Position = new Vector2(p1X - 5, p1Y); 
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (Texture != null)
-                spriteBatch.Draw(Texture, Position, Color.White);
+
+            p1.Draw(spriteBatch);
         }
     }
 }

@@ -13,7 +13,8 @@ using Microsoft.Xna.Framework.Storage;
 using System.Threading;
 using System.IO;
 
-namespace RiceBallXNA
+
+namespace RiceBallXNA 
 {
     /// <summary>
     /// This is the main type for your game
@@ -25,8 +26,13 @@ namespace RiceBallXNA
 
         private int levelChooserCur; //current level selected in level chooser
 
+        private int uselessCounter;
+
         private bool allowLS;
         private bool allowRS;
+
+        public Level1 l1;
+  
 
         
 
@@ -42,7 +48,8 @@ namespace RiceBallXNA
         string line;
         int count = 2;
 
-        private static string[] levelCurList; //list of all the lines in a file
+        bool createdLevel = false;
+        public static string[] levelCurList; //list of all the lines in a file
    
         private int llstatCurrent; //when building a level, how many lines have been processed in the level file
 
@@ -72,6 +79,8 @@ namespace RiceBallXNA
 
         private string sprite = " ";
 
+        public Platform[] test;
+
         private Vector2 orbPos;
         private Vector2 sOrbPos;
         private Vector2 startButtonPos;
@@ -83,7 +92,15 @@ namespace RiceBallXNA
         private Vector2 loadMenuBackgroundPos;
         private Vector2 playButtonPos;
 
+        private KeyboardState OldKeyState;
+
         private Vector2 skyPos;
+
+        public float accel = 2f;
+        public string playerMove = "none";
+        public int playerMoveCounter = 0;
+
+        char[] space;
         private Texture2D sky;
 
         private bool beginCalled;
@@ -118,6 +135,8 @@ namespace RiceBallXNA
         public Song bgSound; //mainmenu
 
         public static List<Song> gameSongs;
+
+        public static List<Platform> gamePlatforms;
 
         public static List<Sprite> spriteList;
 
@@ -236,6 +255,8 @@ namespace RiceBallXNA
             PlaySong(bgSound);
 
             base.Initialize();
+
+            OldKeyState = Keyboard.GetState();
         }
 
         void StopSong()
@@ -293,7 +314,10 @@ namespace RiceBallXNA
             gameSongs.Add(Content.Load<Song>(@"Waterflame - To The Skies"));
             gameSongs.Add(Content.Load<Song>(@"Dimrain47 - The Prototype"));
             gameSongs.Add(Content.Load<Song>(@"Techno"));
-        
+
+            gamePlatforms = new List<Platform>();
+
+            uselessCounter = 0;
                                     
             
 
@@ -311,13 +335,15 @@ namespace RiceBallXNA
             // TODO: Unload any non ContentManager content here
         }
 
-        public static String getWord(String source, int index)
+        /*public static string getWord(string inputString, int word)
         {
-            char[] space = { ' ' };
-            String[] words = source.Split(space);
-            String word = words[index];
-            return word;
-        }
+            string[] words = inputString.Split(new char[] { ' ' });
+            if (words.Length >= word)
+                return words[word];  // Using -1 so 2 returns second word - arrays are indexed with 0 being the first, normally, 
+            // but since you asked for 2 to be the second word, this will do it
+            else
+                return "";
+        }*/
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -338,6 +364,20 @@ namespace RiceBallXNA
 
                 if (orbPos.X > (GraphicsDevice.Viewport.Width - OrbX) || orbPos.X < 0)
                 {
+                    if(uselessCounter > 0)
+                    {
+                        if(orb.Equals(Content.Load<Texture2D>(@"character/char1-1")))
+                        {
+                            orb = Content.Load<Texture2D>(@"character/char1-2");
+                        }
+                        else
+                        {
+                            orb = Content.Load<Texture2D>(@"character/char1-1");
+
+                        
+                        }
+                    }
+                    uselessCounter++;
                     speed *= -1;
                 }
 
@@ -376,16 +416,17 @@ namespace RiceBallXNA
                     int song = Convert.ToInt32(levelCurList[0]);
                     PlaySong(gameSongs[song]);
 
-                    
 
-                 
-                         
-                  
+
+
+                    l1 = new Level1(Content);
+
+                    
                         
                         //count++;
     //                    }
                 }
-
+                checkKeyPress();
 
             }
 
@@ -418,19 +459,38 @@ namespace RiceBallXNA
             if (gs == GameState.Playing)
             {
                 spriteBatch.Draw(sky, skyPos, Color.White);
-                player.Draw(spriteBatch);
-
-
-                for (int count = 0; count < spriteArray.Length; count++) 
-                {
-                    if (spriteArray[count].Position.X <= 800) //don't draw any sprites that have positions extending beyond the canvas size for more optimization, this is already poorly optimizied anyway.
-                    {
-                        spriteArray[count].Draw(spriteBatch);
-                    }
-                }
+                
 
                 
 
+                if (levelCurPath == "Content/Levels/Riceball - Level 1.txt" && !l1.Equals(null))
+                {
+                    l1.Draw(spriteBatch);
+
+                }
+
+                if (playerMove == "up")
+                {
+                    Console.WriteLine("DEBUG ENTERED PLAYERMOVE CHECK");
+                    float x = player.Position.X;
+                    float y = player.Position.Y;
+                    player.Position = new Vector2(x, y-10);
+                    playerMove = "none"; 
+                }
+
+                if (playerMove == "right")
+                {
+                    if (levelCurPath == "Content/Levels/Riceball - Level 1.txt")
+                    {
+                        l1.moveRight(); //move the platforms in the level to the right
+                    }
+                    playerMove = "none";
+                }
+
+                player.Draw(spriteBatch);
+
+                
+                 
             }
             if (gs == GameState.Loading)
             {
@@ -529,6 +589,64 @@ namespace RiceBallXNA
             orb = Content.Load<Texture2D>(@"character/char1-1");
 
             orbPos = new Vector2((GraphicsDevice.Viewport.Width / 2) - (OrbX / 2), (GraphicsDevice.Viewport.Height / 2) - (OrbY / 2));
+        }
+
+       
+
+        void checkKeyPress()
+        {
+            //Console.WriteLine("DEBUG Entered checkKeyPress");
+            KeyboardState NewKeyState = Keyboard.GetState();
+
+            // Is the SPACE key down?
+            if (NewKeyState.IsKeyDown(Keys.Space)) //space = jump
+            {
+                
+                playerMove = "up";
+                Console.WriteLine("Passed isKeyDown");
+                    if(player.Texture.Equals(Content.Load<Texture2D>(@"character/char1-1")))
+                    {
+
+                        
+                            
+                        
+                        player.Texture = Content.Load<Texture2D>(@"character/char2-1");
+                    }
+                    else if(player.Texture.Equals(Content.Load<Texture2D>(@"character/char1-2")))
+                    {
+
+
+                        
+                            
+                        
+                        player.Texture = Content.Load<Texture2D>(@"character/char2-2");
+                    }
+                
+            }
+
+            
+
+            if (NewKeyState.IsKeyDown(Keys.D)) //D = move right       
+            {
+                playerMove = "right";
+                if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char1-1"))) //player is not jumping and is facing left
+                {
+                    player.Texture = Content.Load<Texture2D>(@"character/char1-2");
+                }
+                if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-1"))) //player is jumping and is facing left
+                {
+                    player.Texture = Content.Load<Texture2D>(@"character/char2-2");
+                }
+                
+            }
+            else if (OldKeyState.IsKeyDown(Keys.Space))
+            {
+                // Key was down last update, but not down now, so
+                // it has just been released.
+            }
+
+            // Update saved state.
+            OldKeyState = NewKeyState;
         }
 
         void onMouseFire(int x, int y)
