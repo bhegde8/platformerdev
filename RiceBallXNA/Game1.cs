@@ -32,15 +32,21 @@ namespace RiceBallXNA
         private bool allowRS;
 
         public Level1 l1;
-  
 
-        
+
+        public int playerHealth = 5;
+
+        private Texture2D health1;
+        private Texture2D health2;
+        private Texture2D health3;
+        private Texture2D health4;
+        private Texture2D health5;
 
        //private Texture2D playerGraphic;
 
       //  private Vector2 playerPos;
 
-        private Sprite player;
+        public static Sprite player;
 
         private Texture2D buildingScreen;
         private Texture2D buildingBar;
@@ -317,9 +323,14 @@ namespace RiceBallXNA
 
             gamePlatforms = new List<Platform>();
 
-            uselessCounter = 0;
-                                    
-            
+            uselessCounter = 0; //i don't know actually, i'm sorry about this one
+
+            health1 = Content.Load<Texture2D>(@"powerup/heart");
+            health2 = Content.Load<Texture2D>(@"powerup/heart");
+            health3 = Content.Load<Texture2D>(@"powerup/heart");
+            health4 = Content.Load<Texture2D>(@"powerup/heart");
+            health5 = Content.Load<Texture2D>(@"powerup/heart");
+
 
             //creditsSong = Content.Load<Song>(@"Techno");
         }
@@ -459,7 +470,8 @@ namespace RiceBallXNA
             if (gs == GameState.Playing)
             {
                 spriteBatch.Draw(sky, skyPos, Color.White);
-                
+
+                player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
 
                 
 
@@ -474,7 +486,9 @@ namespace RiceBallXNA
                     Console.WriteLine("DEBUG ENTERED PLAYERMOVE CHECK");
                     float x = player.Position.X;
                     float y = player.Position.Y;
+
                     player.Position = new Vector2(x, y-10);
+                    player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
                     playerMove = "none"; 
                 }
 
@@ -487,9 +501,87 @@ namespace RiceBallXNA
                     playerMove = "none";
                 }
 
-                player.Draw(spriteBatch);
+                if (playerMove == "left")
+                {
+                    if (levelCurPath == "Content/Levels/Riceball - Level 1.txt")
+                    {
+                        l1.moveLeft(); //move the platforms in the level to the right
+                    }
+                    playerMove = "none";
+                }
 
                 
+                float x2 = player.Position.X;
+                float y2 = player.Position.Y;
+                
+                player.Position = new Vector2(x2, y2+2);
+                player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
+
+                
+
+                if (l1.isIntersecting())
+                {
+                    float y3 = player.Position.Y;
+                    player.Position = new Vector2(x2, y3 - 2); //cancel the force of gravity if the player is on top of a platform
+
+                    if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-1")))
+                    {
+
+
+
+
+                        player.Texture = Content.Load<Texture2D>(@"character/char1-1");
+                    }
+                    else if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-2")))
+                    {
+
+
+
+
+
+                        player.Texture = Content.Load<Texture2D>(@"character/char1-2");
+                    }
+                }
+
+                player.Draw(spriteBatch);
+
+                if(playerHealth == 1)
+                {
+                        
+                        spriteBatch.Draw(health1, new Vector2(15, 15), Color.White);
+                }
+                else if(playerHealth == 2)
+                {
+
+
+                        spriteBatch.Draw(health1, new Vector2(15, 15), Color.White);
+                        spriteBatch.Draw(health2, new Vector2(52, 15), Color.White);
+                }
+                else if(playerHealth == 3)
+                {
+
+               
+                        spriteBatch.Draw(health1, new Vector2(15, 15), Color.White);
+                        spriteBatch.Draw(health2, new Vector2(52, 15), Color.White);
+                        spriteBatch.Draw(health3, new Vector2(89, 15), Color.White);
+                }
+                else if(playerHealth == 4)
+                {
+                        spriteBatch.Draw(health1, new Vector2(15, 15), Color.White);
+                        spriteBatch.Draw(health2, new Vector2(52, 15), Color.White);
+                        spriteBatch.Draw(health3, new Vector2(89, 15), Color.White);
+                        spriteBatch.Draw(health4, new Vector2(126, 15), Color.White);
+                }
+                else if(playerHealth == 5)
+                {
+                    
+                        spriteBatch.Draw(health1, new Vector2(15, 15), Color.White);
+                        spriteBatch.Draw(health2, new Vector2(52, 15), Color.White);
+                        spriteBatch.Draw(health3, new Vector2(89, 15), Color.White);
+                        spriteBatch.Draw(health4, new Vector2(126, 15), Color.White);
+                        spriteBatch.Draw(health5, new Vector2(163, 15), Color.White);
+                        
+                }
                  
             }
             if (gs == GameState.Loading)
@@ -639,11 +731,22 @@ namespace RiceBallXNA
                 }
                 
             }
-            else if (OldKeyState.IsKeyDown(Keys.Space))
+
+            if (NewKeyState.IsKeyDown(Keys.A)) //A = move left      
             {
-                // Key was down last update, but not down now, so
-                // it has just been released.
+                playerMove = "left";
+                if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char1-2"))) //player is not jumping and is facing right
+                {
+                    player.Texture = Content.Load<Texture2D>(@"character/char1-1");
+                }
+                if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-2"))) //player is jumping and is facing right
+                {
+                    player.Texture = Content.Load<Texture2D>(@"character/char2-1");
+                }
+
             }
+
+           
 
             // Update saved state.
             OldKeyState = NewKeyState;

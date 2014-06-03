@@ -35,6 +35,15 @@ namespace RiceBallXNA
             p1 = new Platform(Content.Load<Texture2D>(@"platform/platformGreen1"), new Vector2(342, 520));
         }
 
+        public bool isIntersecting() //check if the player intersects any of the platforms
+        {
+            if (Game1.player.boundingRect.Intersects(p1.boundingRect))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public void Update()
         {
            
@@ -47,9 +56,16 @@ namespace RiceBallXNA
             p1.Position = new Vector2(p1X - 5, p1Y); 
         }
 
+        public void moveLeft()
+        {
+            float p1X = p1.Position.X;
+            float p1Y = p1.Position.Y;
+            p1.Position = new Vector2(p1X + 5, p1Y);
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
-
+            p1.boundingRect = new Rectangle((int)p1.Position.X, (int)p1.Position.Y, p1.Texture.Width, p1.Texture.Height); //update bounding rectangle position
             p1.Draw(spriteBatch);
         }
     }
