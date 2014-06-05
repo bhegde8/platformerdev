@@ -31,6 +31,8 @@ namespace RiceBallXNA
         private bool allowLS;
         private bool allowRS;
 
+        public float jumpEndurance = 2f; //jumping endurance to limit how often the player can jump
+
         public Level1 l1;
 
 
@@ -130,6 +132,8 @@ namespace RiceBallXNA
         private Vector2 levelChooseTextPos;
 
         private string levelChooseText;
+
+        
 
         private Thread daemonThread;
         private bool isLoading = false;
@@ -432,7 +436,7 @@ namespace RiceBallXNA
 
                     l1 = new Level1(Content);
 
-                    
+                     // increase jumping endurance
                         
                         //count++;
     //                    }
@@ -469,6 +473,14 @@ namespace RiceBallXNA
 
             if (gs == GameState.Playing)
             {
+                if (jumpEndurance < 30f)
+                {
+                    jumpEndurance = jumpEndurance + 0.15f;
+                }
+                else
+                {
+                    jumpEndurance = 2f;
+                }
                 spriteBatch.Draw(sky, skyPos, Color.White);
 
                 player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
@@ -521,27 +533,38 @@ namespace RiceBallXNA
 
                 if (l1.isIntersecting())
                 {
+
+
                     float y3 = player.Position.Y;
-                    player.Position = new Vector2(x2, y3 - 2); //cancel the force of gravity if the player is on top of a platform
+                    float x3 = player.Position.X;
 
-                    if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-1")))
-                    {
+                            player.Position = new Vector2(x2, y3 - 3); //cancel the force of gravity if the player is on top of a platform
+            
+                    
 
-
-
-
-                        player.Texture = Content.Load<Texture2D>(@"character/char1-1");
-                    }
-                    else if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-2")))
-                    {
+                        if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-1")))
+                        {
 
 
 
 
+                            player.Texture = Content.Load<Texture2D>(@"character/char1-1");
+                        }
+                        else if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-2")))
+                        {
 
-                        player.Texture = Content.Load<Texture2D>(@"character/char1-2");
-                    }
+
+
+
+
+                            player.Texture = Content.Load<Texture2D>(@"character/char1-2");
+                        }
+                    
                 }
+
+                Vector2 FontOrigin = aPix.MeasureString(jumpEndurance.ToString()) / 2;
+
+                spriteBatch.DrawString(aPix, jumpEndurance.ToString(), new Vector2(780,30), Color.White, 0, FontOrigin, 1.0f, SpriteEffects.None, 0.5f);
 
                 player.Draw(spriteBatch);
 
@@ -690,10 +713,14 @@ namespace RiceBallXNA
             //Console.WriteLine("DEBUG Entered checkKeyPress");
             KeyboardState NewKeyState = Keyboard.GetState();
 
+            
             // Is the SPACE key down?
-            if (NewKeyState.IsKeyDown(Keys.Space)) //space = jump
+            
+            if (NewKeyState.IsKeyDown(Keys.Space) && jumpEndurance >= 1f) //space = jump
             {
-                
+                jumpEndurance--;
+              
+
                 playerMove = "up";
                 Console.WriteLine("Passed isKeyDown");
                     if(player.Texture.Equals(Content.Load<Texture2D>(@"character/char1-1")))
@@ -713,7 +740,7 @@ namespace RiceBallXNA
                         
                         player.Texture = Content.Load<Texture2D>(@"character/char2-2");
                     }
-                
+                    return;
             }
 
             
@@ -729,7 +756,7 @@ namespace RiceBallXNA
                 {
                     player.Texture = Content.Load<Texture2D>(@"character/char2-2");
                 }
-                
+                return;
             }
 
             if (NewKeyState.IsKeyDown(Keys.A)) //A = move left      
@@ -743,7 +770,7 @@ namespace RiceBallXNA
                 {
                     player.Texture = Content.Load<Texture2D>(@"character/char2-1");
                 }
-
+                return;
             }
 
            
