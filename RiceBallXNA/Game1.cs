@@ -33,7 +33,13 @@ namespace RiceBallXNA
 
         public float jumpEndurance = 2f; //jumping endurance to limit how often the player can jump
 
+        public int coins = 0;
+
+        private static bool squashing = false;
+        private static int squashCount = 0;
+
         public Level1 l1;
+        public Level2 l2;
 
 
         public int playerHealth = 5;
@@ -75,6 +81,8 @@ namespace RiceBallXNA
         private Texture2D creditsBackground;
         private Texture2D loadMenuBackground;
         private Texture2D playButton;
+        private Texture2D loseScreen;
+        private Texture2D winScreen;
 
         private Texture2D lcAR; //level chooser arrow right
         private Texture2D lcAL; //level choose arrow left
@@ -103,6 +111,18 @@ namespace RiceBallXNA
         private KeyboardState OldKeyState;
 
         private Vector2 skyPos;
+
+        private bool isDead = false; //player is dead
+        private bool hasWon = false; //player won
+
+        private SoundEffect dingSound; //ding!
+        private SoundEffect hitSound; //punch
+
+        private SoundEffect jumpSound; //this only applies to the jumping powerup, not normal jumping
+
+        private SoundEffect speedUp; //speed powerup
+
+        private SoundEffect getCoin; //getting a coin
 
         public float accel = 2f;
         public string playerMove = "none";
@@ -313,6 +333,10 @@ namespace RiceBallXNA
             buildingBar = Content.Load<Texture2D>(@"background/buildingBar");
             buildingScreen = Content.Load<Texture2D>(@"background/buildingScreen");
 
+            loseScreen = Content.Load<Texture2D>(@"background/loseScreen");
+
+            winScreen = Content.Load<Texture2D>(@"background/winScreen");
+
             player.Texture = Content.Load<Texture2D>(@"character/char1-2");
 
             gameSongs = new List<Song>();
@@ -328,6 +352,11 @@ namespace RiceBallXNA
             gamePlatforms = new List<Platform>();
 
             uselessCounter = 0; //i don't know actually, i'm sorry about this one
+
+            dingSound = Content.Load<SoundEffect>("ding.wav");
+            hitSound = Content.Load<SoundEffect>("hit");
+            jumpSound = Content.Load<SoundEffect>("jump");
+            getCoin = Content.Load<SoundEffect>("getCoin");
 
             health1 = Content.Load<Texture2D>(@"powerup/heart");
             health2 = Content.Load<Texture2D>(@"powerup/heart");
@@ -425,7 +454,7 @@ namespace RiceBallXNA
 
             if (gs == GameState.Playing )
             {
-                if (curSong != gameSongs.ElementAt(Convert.ToInt32(levelCurList[0]))) //hacky method: use the indication of whether or not the correct song is playing to render the sprites
+                if (curSong != gameSongs.ElementAt(Convert.ToInt32(levelCurList[0])) && !isDead) //hacky method: use the indication of whether or not the correct song is playing to render the sprites
                 {
                     StopSong();
                     int song = Convert.ToInt32(levelCurList[0]);
@@ -435,6 +464,7 @@ namespace RiceBallXNA
 
 
                     l1 = new Level1(Content);
+                    l2 = new Level2(Content);
 
                      // increase jumping endurance
                         
@@ -493,6 +523,12 @@ namespace RiceBallXNA
 
                 }
 
+                if (levelCurPath == "Content/Levels/Riceball - Level 2.txt" && !l2.Equals(null))
+                {
+                    l2.Draw(spriteBatch);
+
+                }
+
                 if (playerMove == "up")
                 {
                     Console.WriteLine("DEBUG ENTERED PLAYERMOVE CHECK");
@@ -504,43 +540,53 @@ namespace RiceBallXNA
                     playerMove = "none"; 
                 }
 
-                if (playerMove == "right")
+                if (playerMove == "right") //if the player was trying to move right
                 {
                     if (levelCurPath == "Content/Levels/Riceball - Level 1.txt")
                     {
                         l1.moveRight(); //move the platforms in the level to the right
                     }
-                    playerMove = "none";
-                }
-
-                if (playerMove == "left")
-                {
-                    if (levelCurPath == "Content/Levels/Riceball - Level 1.txt")
+                    if (levelCurPath == "Content/Levels/Riceball - Level 2.txt")
                     {
-                        l1.moveLeft(); //move the platforms in the level to the right
+                        l2.moveRight(); //move the platforms in the level to the right
                     }
                     playerMove = "none";
                 }
 
-                
+                if (playerMove == "left") //if the player was trying to move left
+                {
+                    if (levelCurPath == "Content/Levels/Riceball - Level 1.txt")
+                    {
+                        l1.moveLeft(); //move the platforms in the level to the left
+                    }
+                    if (levelCurPath == "Content/Levels/Riceball - Level 2.txt")
+                    {
+                        l2.moveLeft(); //move the platforms in the level to the left
+                    }
+                    playerMove = "none";
+                }
+
+                //GRAVITY-APPLY GRAVITY TO THE PLAYER!-------------------------------------------------------------------------------------------
                 float x2 = player.Position.X;
                 float y2 = player.Position.Y;
                 
                 player.Position = new Vector2(x2, y2+2);
                 player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
+                //--------------------------------------------------------------------------------------------------------------------------------
 
+                if (levelCurPath == "Content/Levels/Riceball - Level 1.txt") //level specific code
                 
+{
+                    if (l1.isIntersecting()) //check if any of the objects in this level are colliding (box collision) with the player
+                    {
 
-                if (l1.isIntersecting())
-                {
 
+                        float y3 = player.Position.Y;
+                        float x3 = player.Position.X;
 
-                    float y3 = player.Position.Y;
-                    float x3 = player.Position.X;
+                        player.Position = new Vector2(x2, y3 - 3); //cancel the force of gravity if the player is on top of a platform
+                        player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
 
-                            player.Position = new Vector2(x2, y3 - 3); //cancel the force of gravity if the player is on top of a platform
-            
-                    
 
                         if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-1")))
                         {
@@ -559,12 +605,237 @@ namespace RiceBallXNA
 
                             player.Texture = Content.Load<Texture2D>(@"character/char1-2");
                         }
-                    
+
+                    }
+
+                    if (l1.isKilling()) //if the player is killing an enemy in this level
+                    {
+                        coins = coins + 15;
+                        hitSound.Play();
+                    }
+
+                    if (l1.isDying()) //if an enemy in this level is attacking the player
+                    {
+
+                        l1.moveLeft();
+                        l1.moveLeft();
+                        l1.moveLeft();
+                        l1.moveLeft();
+                        l1.moveLeft();
+                        l1.moveLeft();
+                        l1.moveLeft();
+
+                        dingSound.Play();
+                    }
+
+                    if (l1.getsJumpPowerup())
+                    {
+                        jumpSound.Play();
+                        float y3 = 22;
+                        float x3 = player.Position.X;
+
+                        player.Position = new Vector2(x3, y3); //teleport player to top
+                        player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
+                    }
+
+                    if (l1.getsSpeedPowerup())
+                    {
+                        jumpSound.Play();
+                        for (int i = 0; i < 300; i++)
+                        {
+
+                            l1.moveRight();
+
+                        }
+                    }
+
+                    if (l1.getsCoin())
+                    {
+                        getCoin.Play();
+                        coins = coins + 10;
+                    }
+
+                    if (l1.getsToLeave())
+                    {
+                        hasWon = true;
+                    }
+                }       
+
+                if (levelCurPath == "Content/Levels/Riceball - Level 2.txt") //level specific code
+                {
+                    if (l2.isIntersecting()) //check if any of the objects in this level are colliding (box collision) with the player
+                    {
+
+
+                        float y3 = player.Position.Y;
+                        float x3 = player.Position.X;
+
+                        player.Position = new Vector2(x2, y3 - 3); //cancel the force of gravity if the player is on top of a platform
+                        player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
+
+
+                        if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-1")))
+                        {
+
+
+
+
+                            player.Texture = Content.Load<Texture2D>(@"character/char1-1");
+                        }
+                        else if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-2")))
+                        {
+
+
+
+
+
+                            player.Texture = Content.Load<Texture2D>(@"character/char1-2");
+                        }
+
+                    }
+
+                    if (l2.isKilling()) //if the player is killing an enemy in this level
+                    {
+                        coins = coins + 15;
+                        hitSound.Play();
+                    }
+
+                    if (l2.isDying()) //if an enemy in this level is attacking the player
+                    {
+
+                        l2.moveLeft();
+                        l2.moveLeft();
+                        l2.moveLeft();
+                        l2.moveLeft();
+                        l2.moveLeft();
+                        l2.moveLeft();
+                        l2.moveLeft();
+
+                        dingSound.Play();
+                    }
+
+                    if (l2.getsJumpPowerup())
+                    {
+                        jumpSound.Play();
+                        float y3 = 22;
+                        float x3 = player.Position.X;
+
+                        player.Position = new Vector2(x3, y3); //teleport player to top
+                        player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
+                    }
+
+                    if (l2.getsSpeedPowerup())
+                    {
+                        jumpSound.Play();
+                        for (int i = 0; i < 300; i++)
+                        {
+
+                            l2.moveRight();
+
+                        }
+                    }
+
+                    if (l2.getsCoin())
+                    {
+                        getCoin.Play();
+                        coins = coins + 10;
+                    }
+
+                    if (l2.getsToLeave())
+                    {
+                        hasWon = true;
+                    }
                 }
 
-                Vector2 FontOrigin = aPix.MeasureString(jumpEndurance.ToString()) / 2;
+                if (squashing)
+                {
+
+                    float y7 = player.Position.Y;
+                    float x7 = player.Position.X;
+
+                    player.Position = new Vector2(x7, y7 + 3);
+                    player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
+
+                    if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char3-2"))) //player is squashing and is facing left
+                    {
+                        player.Texture = Content.Load<Texture2D>(@"character/char2-1");
+                        squashing = false;
+                    }
+                    if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char3-1"))) //player is squashing and is facing right
+                    {
+                        player.Texture = Content.Load<Texture2D>(@"character/char2-2");
+                        squashing = false;
+                    }
+
+                }
+                
+
+                //-------------------------------------------------------------------------------------------------
+                
+                Vector2 FontOrigin = aPix.MeasureString(jumpEndurance.ToString()) / 2; //jump endurance counter
 
                 spriteBatch.DrawString(aPix, jumpEndurance.ToString(), new Vector2(780,30), Color.White, 0, FontOrigin, 1.0f, SpriteEffects.None, 0.5f);
+
+                //-------------------------------------------------------------------------------------------------
+                
+                Vector2 aFontOrigin = aPix.MeasureString("$" + coins.ToString()) / 2; //coins counter
+
+                if (coins < 50)
+                {
+                    spriteBatch.DrawString(aPix, "$" + coins.ToString(), new Vector2(400, 30), Color.Red, 0, aFontOrigin, 1.0f, SpriteEffects.None, 0.5f);
+                }
+                else if (coins < 100 && coins >= 50)
+                {
+                    spriteBatch.DrawString(aPix, "$" + coins.ToString(), new Vector2(400, 30), Color.Yellow, 0, aFontOrigin, 1.0f, SpriteEffects.None, 0.5f);
+                }
+                else if (coins >= 100)
+                {
+                    spriteBatch.DrawString(aPix, "$" + coins.ToString(), new Vector2(400, 30), Color.GreenYellow, 0, aFontOrigin, 1.0f, SpriteEffects.None, 0.5f);
+                }
+                //-------------------------------------------------------------------------------------------------
+
+                if (player.Position.Y > GraphicsDevice.Viewport.Height && !isDead) //check if player has fallen through the bottom of the level and is not already marked as dead
+                {
+                    
+                    registerDeath();
+                }
+
+                if (isDead)
+                {
+                    if (jumpEndurance >= 29)
+                    {
+                        jumpEndurance = 0;
+                        isDead = false;
+                        gs = GameState.StartMenu;
+                        player.Position = new Vector2(342, 432);
+                        playerHealth = 5;
+                        PlaySong(bgSound);
+                        coins = 0;
+                        squashing = false;
+                        squashCount = 0;
+                    }
+                    spriteBatch.Draw(loseScreen, new Vector2(15, 15), Color.White);
+
+                }
+
+                if (hasWon)
+                {
+                    if (jumpEndurance >= 29)
+                    {
+                        jumpEndurance = 0;
+                        isDead = false;
+                        hasWon = false;
+                        gs = GameState.StartMenu;
+                        player.Position = new Vector2(342, 432);
+                        playerHealth = 5;
+                        PlaySong(bgSound);
+                        coins = 0;
+                        squashing = false;
+                        squashCount = 0;
+                    }
+                    spriteBatch.Draw(winScreen, new Vector2(15, 15), Color.White);
+
+                }
 
                 player.Draw(spriteBatch);
 
@@ -629,7 +900,10 @@ namespace RiceBallXNA
 
                 using (StreamReader r = new StreamReader(levelCurPath))
                 {
-
+                    count = 0;
+                    levelCurList[0] = "";
+                    levelCurList[1] = "";
+                    levelCurList[2] = "";
                     while ((line = r.ReadLine()) != null)
                     {
 
@@ -706,8 +980,42 @@ namespace RiceBallXNA
             orbPos = new Vector2((GraphicsDevice.Viewport.Width / 2) - (OrbX / 2), (GraphicsDevice.Viewport.Height / 2) - (OrbY / 2));
         }
 
-       
+        public static bool isSquashing()
+        {
+            return squashing;
+        }
 
+        public void registerDeath()
+        {
+            if (playerHealth == 1)
+            {
+                StopSong();
+                dingSound.Play();
+
+                playerHealth = 0;
+                isDead = true;
+                jumpEndurance = 0;
+                coins = 0;
+                squashing = false;
+                squashCount = 0;
+            }
+            else
+            {
+                dingSound.Play();
+                float y4 = player.Position.Y;
+                float x4 = player.Position.X;
+
+                player.Position = new Vector2(x4, y4 - 100); //recover them in a quick and dirty way that sucks (move them left and up)
+                player.boundingRect = new Rectangle((int)player.Position.X, (int)player.Position.Y, player.Texture.Width, player.Texture.Height);
+
+                playerHealth--;
+
+                squashing = false;
+                squashCount = 0;
+
+                
+            }
+        }
         void checkKeyPress()
         {
             //Console.WriteLine("DEBUG Entered checkKeyPress");
@@ -716,7 +1024,7 @@ namespace RiceBallXNA
             
             // Is the SPACE key down?
             
-            if (NewKeyState.IsKeyDown(Keys.Space) && jumpEndurance >= 1f) //space = jump
+            if (NewKeyState.IsKeyDown(Keys.Space) && jumpEndurance >= 7.5f) //space = jump
             {
                 jumpEndurance--;
               
@@ -755,6 +1063,23 @@ namespace RiceBallXNA
                 if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-1"))) //player is jumping and is facing left
                 {
                     player.Texture = Content.Load<Texture2D>(@"character/char2-2");
+                }
+                return;
+            }
+
+            if (NewKeyState.IsKeyDown(Keys.S)) //S = squash (force down)
+            {
+                
+
+                if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-1"))) //player is jumping and is facing left
+                {
+                    player.Texture = Content.Load<Texture2D>(@"character/char3-2");
+                    squashing = true;
+                }
+                if (player.Texture.Equals(Content.Load<Texture2D>(@"character/char2-2"))) //player is jumping and is facing right
+                {
+                    player.Texture = Content.Load<Texture2D>(@"character/char3-1");
+                    squashing = true;
                 }
                 return;
             }

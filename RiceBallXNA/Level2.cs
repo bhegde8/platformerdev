@@ -16,7 +16,7 @@ using System.IO;
 
 namespace RiceBallXNA
 {
-    public class Level1
+    public class Level2
     {
 
         public static int level;
@@ -40,25 +40,26 @@ namespace RiceBallXNA
         public static Enemy e1;
 
         public static Door d1;
-       
-        
 
 
-        public Level1(ContentManager Content) {
-            
-            p1 = new Platform(Content.Load<Texture2D>(@"platform/tutorial/platformGreen1"), new Vector2(342, 520));
 
-            p2 = new Platform(Content.Load<Texture2D>(@"platform/tutorial/platformGreen2"), new Vector2(1000, 400));
 
-            p3 = new Platform(Content.Load<Texture2D>(@"platform/tutorial/platformGray1"), new Vector2(1670, 520));
+        public Level2(ContentManager Content)
+        {
 
-            p4 = new Platform(Content.Load<Texture2D>(@"platform/tutorial/platformBlack1"), new Vector2(2275, 80));
+            p1 = new Platform(Content.Load<Texture2D>(@"platform/platformGreen1"), new Vector2(342, 520));
 
-            p5 = new Platform(Content.Load<Texture2D>(@"platform/tutorial/platformYellow3"), new Vector2(2775, 500));
+            p2 = new Platform(Content.Load<Texture2D>(@"platform/platformGreen2"), new Vector2(1000, 400));
 
-            p6 = new Platform(Content.Load<Texture2D>(@"platform/tutorial/platformYellow1"), new Vector2(3275, 500));
+            p3 = new Platform(Content.Load<Texture2D>(@"platform/platformGray1"), new Vector2(1670, 520));
 
-            p7 = new Platform(Content.Load<Texture2D>(@"platform/tutorial/platformYellow2"), new Vector2(3775, 500));
+            p4 = new Platform(Content.Load<Texture2D>(@"platform/platformBlack1"), new Vector2(2275, 80));
+
+            p5 = new Platform(Content.Load<Texture2D>(@"platform/platformYellow2"), new Vector2(2775, 500));
+
+            p6 = new Platform(Content.Load<Texture2D>(@"platform/platformYellow1"), new Vector2(3275, 500));
+
+            p7 = new Platform(Content.Load<Texture2D>(@"platform/platformYellow2"), new Vector2(3775, 500));
 
             p8 = new Platform(Content.Load<Texture2D>(@"platform/platformBlack1"), new Vector2(4375, 520));
 
@@ -70,7 +71,7 @@ namespace RiceBallXNA
 
             s1 = new SpeedPwp(Content.Load<Texture2D>(@"powerup/speed"), new Vector2(2775, 350));
 
-            d1 = new Door(Content.Load<Texture2D>(@"powerup/door"), new Vector2(4635, 260));
+            //d1 = new Door(Content.Load<Texture2D>(@"powerup/door"), new Vector2(4635, 260));
 
         }
 
@@ -104,7 +105,7 @@ namespace RiceBallXNA
             {
                 return true;
             }
-            
+
 
             return false;
         }
@@ -136,10 +137,10 @@ namespace RiceBallXNA
 
         public bool getsJumpPowerup() //check if the player is getting a jump powerup
         {
-            
+
             if (j1 != null && Game1.player.boundingRect.Intersects(j1.boundingRect))
             {
-                
+
                 j1 = null;
                 return true;
             }
@@ -168,16 +169,17 @@ namespace RiceBallXNA
 
         public bool getsToLeave() //check if the player gets to leave the stupid level
         {
-            if (d1 != null && Game1.player.boundingRect.Intersects(d1.boundingRect))
+           /* if (d1 != null && Game1.player.boundingRect.Intersects(d1.boundingRect))
             {
                 return true;
-            }
+            } 
+            */
             return false;
         }
 
         public void Update() //i wonder if i'll ever use this method. I doubt it.
         {
-           
+
         }
 
         public void moveRight()
@@ -240,12 +242,12 @@ namespace RiceBallXNA
                 s1.Position = new Vector2(s1X - 5, s1Y);
             }
 
-            if (d1 != null)
+           /* if (d1 != null)
             {
                 float d1X = d1.Position.X;
                 float d1Y = d1.Position.Y;
                 d1.Position = new Vector2(d1X - 5, d1Y);
-            }
+            }*/
         }
         public void moveLeft()
         {
@@ -305,12 +307,12 @@ namespace RiceBallXNA
                 s1.Position = new Vector2(s1X + 5, s1Y);
             }
 
-            if (d1 != null)
+           /* if (d1 != null)
             {
                 float d1X = d1.Position.X;
                 float d1Y = d1.Position.Y;
                 d1.Position = new Vector2(d1X + 5, d1Y);
-            }
+            }*/
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -368,11 +370,11 @@ namespace RiceBallXNA
                 s1.Draw(spriteBatch);
             }
 
-            if (d1 != null)
+         /*   if (d1 != null)
             {
                 d1.boundingRect = new Rectangle((int)d1.Position.X, (int)d1.Position.Y, d1.Texture.Width, d1.Texture.Height);
                 d1.Draw(spriteBatch);
-            }
+            } */
         }
     }
 }

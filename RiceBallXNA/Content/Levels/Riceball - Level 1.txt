@@ -1,2 +1,2 @@
-0
+1
 platformRed1 342 520
